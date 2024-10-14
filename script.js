@@ -45,20 +45,17 @@
     )[0];
     ytBookmarkButton = document.getElementsByClassName("yt-button-class-bookmark-button")[0];
 
-    ytTooltipTextWrapper.setAttribute('aria-hidden', 'true');
     ytTooltip.setAttribute('aria-hidden', 'false');
-    ytTooltip.style.display = 'block';
-    ytTooltip.style.left = ytBookmarkButton.style.left;
-
-    console.log(window.getComputedStyle(ytTooltip));
+    ytTooltipTextWrapper.setAttribute('aria-hidden', 'false');
+    ytTooltip.className = "ytp-tooltip ytp-rounded-tooltip ytp-bottom";
+    ytTooltip.style.cssText = `max-width: 300px; top: 292px; left: 200px;`;
     ytTooltipText.textContent = 'Click to bookmark current timestamp';
   };
 
   const mouseOutEventHandler = () => {
     ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0]
       .parentElement;
-    ytTooltip.style.display = 'none';
-    ytTooltip.setAttribute('aria-hidden', 'true');
+    ytTooltip.style.cssText = `max-width: 300px; top: 292px; left: 200px; display: none;`;
   };
 
   const newVideoLoaded = async () => {
