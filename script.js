@@ -1,91 +1,108 @@
 (() => {
-  let ytLeftControls, ytPlayer;
-  let currentVideo = '';
-  let currentVideoBookmarks = [];
+    let ytLeftControls, ytPlayer;
+    let currentVideo = '';
+    let currentVideoBookmarks = [];
+    let tooltipVisible = false;
+    let tooltipTimeout;
 
-  chrome.runtime.onMessage.addListener((obj, sender, response) => {
-    const { type, value, videoId } = obj;
+    chrome.runtime.onMessage.addListener((obj, sender, response) => {
+        const { type, value, videoId } = obj;
 
-    if (type === 'NEW') {
-      currentVideo = videoId;
-      newVideoLoaded();
-    }
-  });
-
-  const fetchBookmarks = () => {
-    return new Promise(resolve => {
-      chrome.storage.sync.get([currentVideo], obj => {
-        resolve(obj[currentVideo] ? JSON.parse(obj[currentVideo]) : []);
-      });
+        if (type === 'NEW') {
+            currentVideo = videoId;
+            newVideoLoaded();
+        }
     });
-  };
 
-  const addNewBookmarkEventHandler = () => {
-    const currentTime = ytPlayer.currentTime;
-    const newBookmark = {
-      time: currentTime,
-      desc: 'Bookmark at ' + getTime(currentTime),
+    const fetchBookmarks = () => {
+        return new Promise(resolve => {
+            chrome.storage.sync.get([currentVideo], obj => {
+                resolve(obj[currentVideo] ? JSON.parse(obj[currentVideo]) : []);
+            });
+        });
     };
 
-    console.log(newBookmark);
+    const addNewBookmarkEventHandler = () => {
+        const currentTime = ytPlayer.currentTime;
+        const newBookmark = {
+            time: currentTime,
+            desc: 'Bookmark at ' + getTime(currentTime),
+        };
 
-    chrome.storage.sync.set({
-      [currentVideo]: JSON.stringify(
-        [...currentVideoBookmarks, newBookmark].sort((a, b) => a.time - b.time)
-      ),
-    });
-  };
+        // DEBUG
+        console.log(newBookmark);
 
-  const mouseEnterEventHandler = () => {
-    ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0]
-      .parentElement;
-    ytTooltipText = document.getElementsByClassName('ytp-tooltip-text')[0];
-    ytTooltipTextWrapper = document.getElementsByClassName(
-      'ytp-tooltip-text-wrapper'
-    )[0];
-    ytBookmarkButton = document.getElementsByClassName("yt-button-class-bookmark-button")[0];
+        chrome.storage.sync.set({
+            [currentVideo]: JSON.stringify(
+                [...currentVideoBookmarks, newBookmark].sort((a, b) => a.time - b.time)
+            ),
+        });
+    };
 
-    ytTooltip.setAttribute('aria-hidden', 'false');
-    ytTooltipTextWrapper.setAttribute('aria-hidden', 'false');
-    ytTooltip.className = "ytp-tooltip ytp-rounded-tooltip ytp-bottom";
-    ytTooltip.style.cssText = `max-width: 300px; top: 292px; left: 200px;`;
-    ytTooltipText.textContent = 'Click to bookmark current timestamp';
-  };
+    const mouseEnterEventHandler = () => {
+        const ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0]
+            .parentElement;
+        const ytTooltipText = document.getElementsByClassName('ytp-tooltip-text')[0];
+        const ytTooltipTextWrapper = document.getElementsByClassName(
+            'ytp-tooltip-text-wrapper'
+        )[0];
+        const ytBookmarkButton = document.getElementsByClassName("yt-button-class-bookmark-button")[0];
 
-  const mouseOutEventHandler = () => {
-    ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0]
-      .parentElement;
-    ytTooltip.style.cssText = `max-width: 300px; top: 292px; left: 200px; display: none;`;
-  };
+        const rect = ytBookmarkButton.getBoundingClientRect();
 
-  const newVideoLoaded = async () => {
-    const bookmarkButtonExists =
-      document.getElementsByClassName('bookmarkButton')[0];
+        // Ensure tooltip is visible
+        if (ytTooltip.getAttribute('aria-hidden') === 'true') {
+            ytTooltip.removeAttribute('aria-hidden');
+        }
 
-    if (!bookmarkButtonExists) {
-      const bookmarkButton = document.createElement('img');
-      bookmarkButton.src = chrome.runtime.getURL('assets/add.png');
-      bookmarkButton.className = 'yt-button-class-bookmark-button';
+        ytTooltipTextWrapper.setAttribute('aria-hidden', 'true');
+        ytTooltip.className = "ytp-tooltip ytp-rounded-tooltip ytp-bottom";
+        ytTooltip.style.cssText = `max-width: 300px; top: ${rect.top - 100}px; left: ${rect.left - 90}px;`;
 
-      ytLeftControls = document.getElementsByClassName('ytp-left-controls')[0];
-      ytPlayer = document.getElementsByClassName('video-stream')[0];
+        // Show the tooltip
+        ytTooltip.style.display = '';
+        ytTooltipText.textContent = 'Click to bookmark current timestamp';
 
-      ytLeftControls.appendChild(bookmarkButton);
-      bookmarkButton.addEventListener('mouseenter', mouseEnterEventHandler);
-      bookmarkButton.addEventListener('mouseout', mouseOutEventHandler);
-      bookmarkButton.addEventListener('click', addNewBookmarkEventHandler);
-    }
-  };
+        tooltipVisible = true;
 
-  newVideoLoaded();
+        clearTimeout(tooltipTimeout);
+    };
+
+    const mouseLeaveEventHandler = () => {
+        tooltipVisible = false;
+
+        const ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0].parentElement;
+        ytTooltip.style.display = 'none'; // Hide tooltip
+    };
+
+
+
+    const newVideoLoaded = async () => {
+        const bookmarkButtonExists =
+            document.getElementsByClassName('bookmarkButton')[0];
+
+        if (!bookmarkButtonExists) {
+            const bookmarkButton = document.createElement('img');
+            bookmarkButton.src = chrome.runtime.getURL('assets/add.png');
+            bookmarkButton.className = 'yt-button-class-bookmark-button';
+            bookmarkButton.style.cssText = 'margin-left: auto; margin-right: 10px;';
+
+            ytLeftControls = document.getElementsByClassName('ytp-left-controls')[0];
+            ytPlayer = document.getElementsByClassName('video-stream')[0];
+
+            ytLeftControls.appendChild(bookmarkButton);
+            bookmarkButton.addEventListener('mouseover', mouseEnterEventHandler);
+            bookmarkButton.addEventListener('mouseleave', mouseLeaveEventHandler);
+            bookmarkButton.addEventListener('click', addNewBookmarkEventHandler);
+        }
+    };
+
+    newVideoLoaded();
 })();
 
 const getTime = t => {
-  var date = new Date(0);
-  date.setSeconds(t);
+    var date = new Date(0);
+    date.setSeconds(t);
 
-  console.log(t);
-  console.log(date);
-
-  return date.toISOString().substr(11, 8);
+    return date.toISOString().substr(11, 8);
 };

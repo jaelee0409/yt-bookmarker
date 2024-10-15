@@ -26,11 +26,11 @@
         }
     ],
     "action": {
-      "default_popup": "ui.html",
-      "default_icon": {
-        "16": "assets/bookmark.png",
-        "24": "assets/bookmark.png",
-        "32": "assets/bookmark.png"
-      }
+        "default_popup": "ui.html",
+        "default_icon": {
+            "16": "assets/bookmark.png",
+            "24": "assets/bookmark.png",
+            "32": "assets/bookmark.png"
+        }
     }
-  }
+}
