@@ -3,7 +3,6 @@
     let currentVideo = '';
     let currentVideoBookmarks = [];
     let tooltipVisible = false;
-    let tooltipTimeout;
 
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type, value, videoId } = obj;
@@ -39,14 +38,10 @@
         });
     };
 
-    const mouseEnterEventHandler = () => {
-        const ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0]
-            .parentElement;
+    const showTooltip = () => {
+        const ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0].parentElement;
         const ytTooltipText = document.getElementsByClassName('ytp-tooltip-text')[0];
-        const ytTooltipTextWrapper = document.getElementsByClassName(
-            'ytp-tooltip-text-wrapper'
-        )[0];
-        const ytBookmarkButton = document.getElementsByClassName("yt-button-class-bookmark-button")[0];
+        const ytBookmarkButton = document.getElementsByClassName("bookmark-button")[0];
 
         const rect = ytBookmarkButton.getBoundingClientRect();
 
@@ -55,44 +50,51 @@
             ytTooltip.removeAttribute('aria-hidden');
         }
 
-        ytTooltipTextWrapper.setAttribute('aria-hidden', 'true');
         ytTooltip.className = "ytp-tooltip ytp-rounded-tooltip ytp-bottom";
-        ytTooltip.style.cssText = `max-width: 300px; top: ${rect.top - 100}px; left: ${rect.left - 90}px;`;
-
-        // Show the tooltip
-        ytTooltip.style.display = '';
+        ytTooltip.style.cssText = `max-width: 300px; top: ${rect.top - 100}px; left: ${rect.left - 90}px; display: block;`;
         ytTooltipText.textContent = 'Click to bookmark current timestamp';
 
         tooltipVisible = true;
-
-        clearTimeout(tooltipTimeout);
     };
 
-    const mouseLeaveEventHandler = () => {
-        tooltipVisible = false;
-
+    const hideTooltip = () => {
         const ytTooltip = document.getElementsByClassName('ytp-tooltip-text-wrapper')[0].parentElement;
-        ytTooltip.style.display = 'none'; // Hide tooltip
-    };
+        ytTooltip.style.display = 'none';
+        tooltipVisible = false;
+    }
+
+    const mouseEnterEventHandler = () => {
+        const ytBookmarkButton = document.getElementsByClassName('bookmark-button')[0];
+
+        setTimeout(() => {
+
+            if (!tooltipVisible)
+                showTooltip();
 
 
+            const mouseLeaveEventHandler = () => {
+                hideTooltip();
+                ytBookmarkButton.removeEventListener('mouseleave', mouseLeaveEventHandler);
+            };
+            ytBookmarkButton.addEventListener('mouseleave', mouseLeaveEventHandler);
+        }, 100);
+
+    }
 
     const newVideoLoaded = async () => {
-        const bookmarkButtonExists =
-            document.getElementsByClassName('bookmarkButton')[0];
+        const bookmarkButtonExists = document.getElementsByClassName('bookmark-button')[0];
 
         if (!bookmarkButtonExists) {
             const bookmarkButton = document.createElement('img');
             bookmarkButton.src = chrome.runtime.getURL('assets/add.png');
-            bookmarkButton.className = 'yt-button-class-bookmark-button';
-            bookmarkButton.style.cssText = 'margin-left: auto; margin-right: 10px;';
+            bookmarkButton.className = 'ytp-button bookmark-button';
+            bookmarkButton.style.cssText = 'overflow: visible; z-index: 1000;';
 
             ytLeftControls = document.getElementsByClassName('ytp-left-controls')[0];
             ytPlayer = document.getElementsByClassName('video-stream')[0];
 
             ytLeftControls.appendChild(bookmarkButton);
             bookmarkButton.addEventListener('mouseover', mouseEnterEventHandler);
-            bookmarkButton.addEventListener('mouseleave', mouseLeaveEventHandler);
             bookmarkButton.addEventListener('click', addNewBookmarkEventHandler);
         }
     };
