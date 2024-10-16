@@ -21,15 +21,14 @@
         });
     };
 
-    const addNewBookmarkEventHandler = () => {
+    const addNewBookmarkEventHandler = async () => {
         const currentTime = ytPlayer.currentTime;
         const newBookmark = {
             time: currentTime,
             desc: 'Bookmark at ' + getTime(currentTime),
         };
 
-        // DEBUG
-        console.log(newBookmark);
+        currentVideoBookmarks = await fetchBookmarks();
 
         chrome.storage.sync.set({
             [currentVideo]: JSON.stringify(
@@ -82,6 +81,9 @@
     }
 
     const newVideoLoaded = async () => {
+
+        currentVideoBookmarks = await fetchBookmarks();
+
         const bookmarkButtonExists = document.getElementsByClassName('bookmark-button')[0];
 
         if (!bookmarkButtonExists) {
