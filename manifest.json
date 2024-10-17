@@ -3,7 +3,7 @@
     "name": "YouTube Bookmarker",
     "description": "Saving multiple timestamps in YouTube videos",
     "version": "1.0",
-    "permissions": ["storage", "tabs"],
+    "permissions": ["storage", "tabs", "activeTab"],
     "host_permissions": ["https://*.youtube.com/*"],
     "background": {
         "service_worker": "background.js"
