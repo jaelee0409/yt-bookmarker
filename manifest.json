@@ -18,8 +18,8 @@
         {
             "resources": [
                 "assets/add.png",
-                "assets/play.png",
-                "assets/delete.png",
+                "assets/play_32.png",
+                "assets/delete_32.png",
                 "assets/save.png"
             ],
             "matches": ["https://*.youtube.com/*"]

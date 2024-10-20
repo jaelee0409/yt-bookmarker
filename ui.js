@@ -47,7 +47,7 @@ const onDelete = () => {
 
 const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
     const controlElement = document.createElement("img");
-    // controlElement.src = "assets/" + src + ".png";
+    controlElement.src = "assets/" + src + "_32.png";
     controlElement.title = src;
     controlElement.addEventListener("click", eventListener);
     controlParentElement.appendChild(controlElement);
