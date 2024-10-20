@@ -43,6 +43,7 @@
         const ytBookmarkButton = document.getElementsByClassName("bookmark-button")[0];
 
         const rect = ytBookmarkButton.getBoundingClientRect();
+        console.log(rect);
 
         // Ensure tooltip is visible
         if (ytTooltip.getAttribute('aria-hidden') === 'true') {
@@ -50,7 +51,7 @@
         }
 
         ytTooltip.className = "ytp-tooltip ytp-rounded-tooltip ytp-bottom";
-        ytTooltip.style.cssText = `max-width: 300px; top: ${rect.top - 100}px; left: ${rect.left - 90}px; display: block;`;
+        ytTooltip.style.cssText = `max-width: 300px; top: ${rect.top * 0.85}px; left: ${rect.x - 180}px; display: block;`;
         ytTooltipText.textContent = 'Click to bookmark current timestamp';
 
         tooltipVisible = true;
@@ -90,7 +91,7 @@
             const bookmarkButton = document.createElement('img');
             bookmarkButton.src = chrome.runtime.getURL('assets/add.png');
             bookmarkButton.className = 'ytp-button bookmark-button';
-            bookmarkButton.style.cssText = 'overflow: visible; z-index: 1000;';
+            bookmarkButton.style.cssText = 'margin-left: auto;';
 
             ytLeftControls = document.getElementsByClassName('ytp-left-controls')[0];
             ytPlayer = document.getElementsByClassName('video-stream')[0];

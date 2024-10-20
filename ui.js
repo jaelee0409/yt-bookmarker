@@ -1,6 +1,24 @@
 import { getCurrentTabURL } from "./utils.js"
 
-const addNewBookmark = () => {
+const addNewBookmark = (bookmarksElement, bookmark) => {
+    const bookmarkTitleElement = document.createElement("div");
+    const newBookmarkElement = document.createElement("div");
+    const controlsElement = document.createElement("div");
+
+    bookmarkTitleElement.textContent = bookmark.desc;
+    bookmarkTitleElement.className = "bookmark-title";
+
+    newBookmarkElement.id = "bookmark-" + bookmark.time;
+    newBookmarkElement.className = "bookmark";
+    newBookmarkElement.setAttribute("timestamp", bookmark.time);
+
+    controlsElement.className = "bookmark-controls";
+
+    setBookmarkAttributes("play", onPlay, controlsElement);
+
+    newBookmarkElement.appendChild(bookmarkTitleElement);
+    newBookmarkElement.appendChild(controlsElement);
+    bookmarksElement.appendChild(newBookmarkElement);
 
 }
 
@@ -12,13 +30,28 @@ const viewBookmarks = (currentBookmarks=[]) => {
         for (let i = 0; i < currentBookmarks.length; ++i) {
             const bookmark = currentBookmarks[i];
             addNewBookmark(bookmarks, bookmark);
-
         }
     }
     else {
         bookmarks.innerHTML = '<i class="row">No bookmarks</i>';
     }
 }
+
+const onPlay = () => {
+
+};
+
+const onDelete = () => {
+
+};
+
+const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
+    const controlElement = document.createElement("img");
+    // controlElement.src = "assets/" + src + ".png";
+    controlElement.title = src;
+    controlElement.addEventListener("click", eventListener);
+    controlParentElement.appendChild(controlElement);
+};
 
 document.addEventListener("DOMContentLoaded", async () => {
     const currentTab = await getCurrentTabURL();
