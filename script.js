@@ -7,15 +7,26 @@
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type, value, videoId } = obj;
 
-        if (type === 'NEW') {
+        if (type === "NEW") {
             currentVideo = videoId;
             newVideoLoaded();
+        }
+        else if (type === "PLAY") {
+            ytPlayer.currentTime = value;
+        }
+        else if (type === "DELETE") {
+            currentVideoBookmarks = currentVideoBookmarks.filter((t) => t.time != value);
+            chrome.storage.sync.set({
+                [currentVideo]: JSON.stringify(currentVideoBookmarks)
+            });
+
+            response(currentVideoBookmarks);
         }
     });
 
     const fetchBookmarks = () => {
-        return new Promise(resolve => {
-            chrome.storage.sync.get([currentVideo], obj => {
+        return new Promise((resolve) => {
+            chrome.storage.sync.get([currentVideo], (obj) => {
                 resolve(obj[currentVideo] ? JSON.parse(obj[currentVideo]) : []);
             });
         });
@@ -25,8 +36,14 @@
         const currentTime = ytPlayer.currentTime;
         const newBookmark = {
             time: currentTime,
-            desc: 'Bookmark at ' + getTime(currentTime),
+            // videoId: id,
+            desc: document.title.slice(0, -10) + " bookmarked at " + getTime(currentTime)
         };
+
+        const metaElement = document.querySelector('meta[property="og:url"]');
+        const currentUrl = metaElement ? metaElement.getAttribute('content') : null;
+
+        playVideo(currentUrl);
 
         currentVideoBookmarks = await fetchBookmarks();
 
@@ -43,7 +60,6 @@
         const ytBookmarkButton = document.getElementsByClassName("bookmark-button")[0];
 
         const rect = ytBookmarkButton.getBoundingClientRect();
-        console.log(rect);
 
         // Ensure tooltip is visible
         if (ytTooltip.getAttribute('aria-hidden') === 'true') {
@@ -102,6 +118,18 @@
         }
     };
 
+    const playVideo = (videoUrl) => {
+        const videoId = extractVideoId(videoUrl);
+        console.log(videoId);
+        if(videoId) {
+            // ytPlayer.loadVideoById(videoId);
+        }
+        else {
+            console.error("[YouTube Bookmarker] Invalid YouTube URL");
+        }
+    }
+
+
     newVideoLoaded();
 })();
 
@@ -111,3 +139,9 @@ const getTime = t => {
 
     return date.toISOString().substr(11, 8);
 };
+
+const extractVideoId = (url) => {
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|watch)\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
