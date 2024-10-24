@@ -14,6 +14,8 @@
         }
         else if (type === "DELETE") {
             console.log("[DELETE MESSAGE]");
+
+            // TODO
             currentVideoBookmarks = currentVideoBookmarks.filter((t) => t.time != value);
             chrome.storage.sync.set({
                 [currentVideo]: JSON.stringify(currentVideoBookmarks)
@@ -22,19 +24,18 @@
             response(currentVideoBookmarks);
         }
         else if (type === "LOAD") {
-            console.log("[LOAD MESSAGE]");
             newVideoLoaded();
         }
     });
 
-    const fetchBookmarks = () => {
+    // const fetchBookmarks = () => {
         // console.log("Fetching bookmarks...");
 
         // chrome.storage.sync.get("bookmarks", (data) => {
             // let bookmarks = data.bookmarks || [];
 
         // });
-    };
+    // };
 
     const addNewBookmarkEventHandler = () => {
         console.log("Adding a new bookmark...");

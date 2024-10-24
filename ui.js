@@ -42,6 +42,8 @@ const viewBookmarks = (currentBookmarks=[]) => {
 }
 
 const onPlay = (e) => {
+    // TODO
+
     const elem = e.target.parentNode.parentNode;
     const bookmarkTime = elem.getAttribute("timestamp");
     const id = elem.getAttribute("videoId");
@@ -56,6 +58,8 @@ const onPlay = (e) => {
 };
 
 const onDelete = (e) => {
+    // TODO
+
     const bookmarkTime = e.target.parentNode.parentNode.getAttribute("timestamp");
     const videoId = e.target.parentNode.parentNode.getAttribute("videoId");
     const bookmarkElementToDelete = document.getElementById("bookmark-" + videoId + bookmarkTime);
