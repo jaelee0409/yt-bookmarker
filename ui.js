@@ -8,9 +8,10 @@ const addNewBookmark = (bookmarksElement, bookmark) => {
     bookmarkTitleElement.textContent = bookmark.desc;
     bookmarkTitleElement.className = "bookmark-title";
 
-    newBookmarkElement.id = "bookmark-" + bookmark.time;
+    newBookmarkElement.id = "bookmark-" + bookmark.videoId + bookmark.time;
     newBookmarkElement.className = "bookmark";
     newBookmarkElement.setAttribute("timestamp", bookmark.time);
+    newBookmarkElement.setAttribute("videoId", bookmark.videoId);
 
     controlsElement.className = "bookmark-controls";
 
@@ -40,25 +41,30 @@ const viewBookmarks = (currentBookmarks=[]) => {
     return;
 }
 
-const onPlay = async (e) => {
-    const bookmarkTime = e.target.parentNode.parentNode.getAttribute("timestamp");
-    const currentTab = await getCurrentTabURL();
+const onPlay = (e) => {
+    const elem = e.target.parentNode.parentNode;
+    const bookmarkTime = elem.getAttribute("timestamp");
+    const id = elem.getAttribute("videoId");
 
-    chrome.tabs.sendMessage(currentTab.id, {
+    console.log("id in ui.js : " + id);
+
+    chrome.runtime.sendMessage({
         type: "PLAY",
-        value: bookmarkTime
+        value: bookmarkTime,
+        videoId: id
     });
 };
 
-const onDelete = async (e) => {
+const onDelete = (e) => {
     const bookmarkTime = e.target.parentNode.parentNode.getAttribute("timestamp");
-    const currentTab = await getCurrentTabURL();
-    const bookmarkElementToDelete = document.getElementById("bookmark-" + bookmarkTime);
+    const videoId = e.target.parentNode.parentNode.getAttribute("videoId");
+    const bookmarkElementToDelete = document.getElementById("bookmark-" + videoId + bookmarkTime);
 
     bookmarkElementToDelete.parentNode.removeChild(bookmarkElementToDelete);
 
-    chrome.tabs.sendMessage(currentTab.id, {
+    chrome.runtime.sendMessage({
         type: "DELETE",
+        videoId: videoId,
         value: bookmarkTime
     }, viewBookmarks);
 
@@ -72,24 +78,27 @@ const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
     controlParentElement.appendChild(controlElement);
 };
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const currentTab = await getCurrentTabURL();
-    const queryParameters = currentTab.url.split("?")[1];
-    const urlParameters = new URLSearchParams(queryParameters);
-    const currentVideo = urlParameters.get("v");
+document.addEventListener("DOMContentLoaded", () => {
+//     const currentTab = await getCurrentTabURL();
+    // const queryParameters = currentTab.url.split("?")[1];
+    // const urlParameters = new URLSearchParams(queryParameters);
+    // const currentVideo = urlParameters.get("v");
 
-    if (currentTab.url.includes("youtube.com/watch") && currentVideo) {
+    // if (currentTab.url.includes("youtube.com/watch") && currentVideo) {
         // YouTube video url
-        chrome.storage.sync.get([currentVideo], (data) => {
-            const currentVideoBookmarks = data[currentVideo] ? JSON.parse(data[currentVideo]) : [];
+        chrome.storage.sync.get("bookmarks", (data) => {
+            let bookmarks = data.bookmarks || [];
 
+            bookmarks.forEach((bookmark) => {
+                console.log(bookmark.desc);
+            })
             // Show bookmarks
-            viewBookmarks(currentVideoBookmarks);
-        })
-    }
-    else {
+            viewBookmarks(bookmarks);
+        });
+    // }
+    // else {
         // Not a YouTube video url
-        const container = document.getElementsByClassName("youtube-bookmark-extension")[0];
-        container.innerHTML = '<div class="title">This is not a YouTube video page.</div>';
-    }
+        // const container = document.getElementsByClassName("youtube-bookmark-extension")[0];
+        // container.innerHTML = '<div class="title">This is not a YouTube video page.</div>';
+    // }
 });

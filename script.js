@@ -7,14 +7,13 @@
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type, value, videoId } = obj;
 
-        if (type === "NEW") {
-            currentVideo = videoId;
-            newVideoLoaded();
-        }
-        else if (type === "PLAY") {
-            ytPlayer.currentTime = value;
+        if (type === "PLAY") {
+            console.log("[PLAY MESSAGE]");
+            console.log("value : " + value);
+            window.location.assign(`https://www.youtube.com/watch?v=${videoId}&t=${value}`);
         }
         else if (type === "DELETE") {
+            console.log("[DELETE MESSAGE]");
             currentVideoBookmarks = currentVideoBookmarks.filter((t) => t.time != value);
             chrome.storage.sync.set({
                 [currentVideo]: JSON.stringify(currentVideoBookmarks)
@@ -22,35 +21,45 @@
 
             response(currentVideoBookmarks);
         }
+        else if (type === "LOAD") {
+            console.log("[LOAD MESSAGE]");
+            newVideoLoaded();
+        }
     });
 
     const fetchBookmarks = () => {
-        return new Promise((resolve) => {
-            chrome.storage.sync.get([currentVideo], (obj) => {
-                resolve(obj[currentVideo] ? JSON.parse(obj[currentVideo]) : []);
-            });
-        });
+        // console.log("Fetching bookmarks...");
+
+        // chrome.storage.sync.get("bookmarks", (data) => {
+            // let bookmarks = data.bookmarks || [];
+
+        // });
     };
 
-    const addNewBookmarkEventHandler = async () => {
-        const currentTime = ytPlayer.currentTime;
-        const newBookmark = {
-            time: currentTime,
-            // videoId: id,
-            desc: document.title.slice(0, -10) + " bookmarked at " + getTime(currentTime)
-        };
+    const addNewBookmarkEventHandler = () => {
+        console.log("Adding a new bookmark...");
+        const createdTime = new Date();
 
         const metaElement = document.querySelector('meta[property="og:url"]');
         const currentUrl = metaElement ? metaElement.getAttribute('content') : null;
+        const currentVideoId = extractVideoId(currentUrl);
+        const currentTime = ytPlayer.currentTime;
 
-        playVideo(currentUrl);
+        const newBookmark = {
+            time: currentTime,
+            videoId: currentVideoId,
+            desc: document.title.slice(0, -10) + " bookmarked at " + getTime(currentTime),
+            createdAt: createdTime
+        };
 
-        currentVideoBookmarks = await fetchBookmarks();
+        // currentVideoBookmarks = await fetchBookmarks();
+        
+        chrome.storage.sync.get("bookmarks", (data) => {
+            let bookmarks = data.bookmarks || [];
+            bookmarks.push(newBookmark);
+            bookmarks.sort((a, b) => b.createdAt - a.createdAt);
 
-        chrome.storage.sync.set({
-            [currentVideo]: JSON.stringify(
-                [...currentVideoBookmarks, newBookmark].sort((a, b) => a.time - b.time)
-            ),
+            chrome.storage.sync.set({ "bookmarks": bookmarks });
         });
     };
 
@@ -97,9 +106,9 @@
 
     }
 
-    const newVideoLoaded = async () => {
+    const newVideoLoaded = () => {
 
-        currentVideoBookmarks = await fetchBookmarks();
+        // currentVideoBookmarks = await fetchBookmarks();
 
         const bookmarkButtonExists = document.getElementsByClassName('bookmark-button')[0];
 
@@ -118,19 +127,19 @@
         }
     };
 
-    const playVideo = (videoUrl) => {
-        const videoId = extractVideoId(videoUrl);
-        console.log(videoId);
-        if(videoId) {
-            // ytPlayer.loadVideoById(videoId);
-        }
-        else {
-            console.error("[YouTube Bookmarker] Invalid YouTube URL");
-        }
-    }
+    // const playVideo = (videoUrl) => {
+        // const videoId = extractVideoId(videoUrl);
+        // if(videoId) {
+            // console.log(ytPlayer.src);
+            // ytPlayer.play(videoId);
+        // }
+        // else {
+            // console.error("[YouTube Bookmarker] Invalid YouTube URL");
+        // }
+    // }
 
 
-    newVideoLoaded();
+    // newVideoLoaded();
 })();
 
 const getTime = t => {
