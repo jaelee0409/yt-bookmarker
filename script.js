@@ -8,9 +8,9 @@
         const { type, value, videoId } = obj;
 
         if (type === "PLAY") {
-            console.log("[PLAY MESSAGE]");
-            console.log("value : " + value);
-            window.location.assign(`https://www.youtube.com/watch?v=${videoId}&t=${value}`);
+            // console.log("[PLAY MESSAGE]");
+            // console.log("value : " + value);
+            // chrome.tabs.create({ url: "https://www.youtube.com/watch?v=${videoId}&t=${value}" })
         }
         else if (type === "DELETE") {
             console.log("[DELETE MESSAGE]");

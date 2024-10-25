@@ -1,6 +1,6 @@
 import { getCurrentTabURL } from "./utils.js"
 
-const addNewBookmark = (bookmarksElement, bookmark) => {
+const addBookmark = (bookmarksElement, bookmark) => {
     const bookmarkTitleElement = document.createElement("div");
     const newBookmarkElement = document.createElement("div");
     const controlsElement = document.createElement("div");
@@ -31,7 +31,7 @@ const viewBookmarks = (currentBookmarks=[]) => {
     if (currentBookmarks.length > 0) {
         for (let i = 0; i < currentBookmarks.length; ++i) {
             const bookmark = currentBookmarks[i];
-            addNewBookmark(bookmarks, bookmark);
+            addBookmark(bookmarks, bookmark);
         }
     }
     else {
@@ -41,20 +41,28 @@ const viewBookmarks = (currentBookmarks=[]) => {
     return;
 }
 
-const onPlay = (e) => {
+const onPlay = async (e) => {
     // TODO
+
+    const currentTabURL = await getCurrentTabURL();
+    console.log(currentTabURL);
+    // const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+    // console.log(tab);
 
     const elem = e.target.parentNode.parentNode;
     const bookmarkTime = elem.getAttribute("timestamp");
-    const id = elem.getAttribute("videoId");
+    const videoId = elem.getAttribute("videoId");
 
-    console.log("id in ui.js : " + id);
+    console.log("time :" + bookmarkTime)
+    console.log("id :" + videoId)
 
-    chrome.runtime.sendMessage({
-        type: "PLAY",
-        value: bookmarkTime,
-        videoId: id
-    });
+    chrome.tabs.create({ url: "https://www.youtube.com/watch?v=${videoId}&t=${bookmarkTime}" })
+
+    // chrome.tabs.sendMessage(currentTabURL.id, {
+    //     type: "PLAY",
+        // value: bookmarkTime,
+        // videoId: video_id
+    // });
 };
 
 const onDelete = (e) => {
@@ -83,26 +91,23 @@ const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-//     const currentTab = await getCurrentTabURL();
+    // const currentTab = await getCurrentTabURL();
     // const queryParameters = currentTab.url.split("?")[1];
     // const urlParameters = new URLSearchParams(queryParameters);
     // const currentVideo = urlParameters.get("v");
 
     // if (currentTab.url.includes("youtube.com/watch") && currentVideo) {
-        // YouTube video url
-        chrome.storage.sync.get("bookmarks", (data) => {
-            let bookmarks = data.bookmarks || [];
+    // YouTube video url
+    chrome.storage.sync.get("bookmarks", (data) => {
+        let bookmarks = data.bookmarks || [];
 
-            bookmarks.forEach((bookmark) => {
-                console.log(bookmark.desc);
-            })
-            // Show bookmarks
-            viewBookmarks(bookmarks);
-        });
+        // Show bookmarks
+        viewBookmarks(bookmarks);
+    });
     // }
     // else {
-        // Not a YouTube video url
-        // const container = document.getElementsByClassName("youtube-bookmark-extension")[0];
-        // container.innerHTML = '<div class="title">This is not a YouTube video page.</div>';
+    // Not a YouTube video url
+    // const container = document.getElementsByClassName("youtube-bookmark-extension")[0];
+    // container.innerHTML = '<div class="title">This is not a YouTube video page.</div>';
     // }
 });
