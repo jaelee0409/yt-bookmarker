@@ -1,6 +1,5 @@
 (() => {
     let ytLeftControls, ytPlayer;
-    let currentVideo = '';
     let currentVideoBookmarks = [];
     let tooltipVisible = false;
 
@@ -15,13 +14,21 @@
         else if (type === "DELETE") {
             console.log("[DELETE MESSAGE]");
 
-            // TODO
-            currentVideoBookmarks = currentVideoBookmarks.filter((t) => t.time != value);
-            chrome.storage.sync.set({
-                [currentVideo]: JSON.stringify(currentVideoBookmarks)
-            });
 
-            response(currentVideoBookmarks);
+            // chrome.storage.sync.get("bookmarks", (data) => {
+            //     let bookmarks = data.bookmarks || [];
+                // bookmarks = bookmarks.filter(bookmark => bookmark.videoId !== videoId);
+
+                // chrome.storage.sync.set({ "bookmarks": bookmarks });
+            // });
+
+            // TODO
+            // currentVideoBookmarks = currentVideoBookmarks.filter((t) => t.time != value);
+            // chrome.storage.sync.set({
+            // [currentVideo]: JSON.stringify(currentVideoBookmarks)
+            // });
+
+            // response(currentVideoBookmarks);
         }
         else if (type === "LOAD") {
             newVideoLoaded();
@@ -29,32 +36,34 @@
     });
 
     // const fetchBookmarks = () => {
-        // console.log("Fetching bookmarks...");
+    // console.log("Fetching bookmarks...");
 
-        // chrome.storage.sync.get("bookmarks", (data) => {
-            // let bookmarks = data.bookmarks || [];
+    // chrome.storage.sync.get("bookmarks", (data) => {
+    // let bookmarks = data.bookmarks || [];
 
-        // });
+    // });
     // };
 
-    const addNewBookmarkEventHandler = () => {
+    const addBookmarkEventHandler = () => {
         console.log("Adding a new bookmark...");
         const createdTime = new Date();
 
         const metaElement = document.querySelector('meta[property="og:url"]');
         const currentUrl = metaElement ? metaElement.getAttribute('content') : null;
         const currentVideoId = extractVideoId(currentUrl);
-        const currentTime = ytPlayer.currentTime;
+        const currentTime = Math.floor(ytPlayer.currentTime);
 
         const newBookmark = {
             time: currentTime,
             videoId: currentVideoId,
             desc: document.title.slice(0, -10) + " bookmarked at " + getTime(currentTime),
-            createdAt: createdTime
+            createdAt: createdTime,
+            id: currentVideoId + currentTime
         };
 
+        console.log("id: " + currentVideoId + currentTime);
         // currentVideoBookmarks = await fetchBookmarks();
-        
+
         chrome.storage.sync.get("bookmarks", (data) => {
             let bookmarks = data.bookmarks || [];
             bookmarks.push(newBookmark);
@@ -108,6 +117,7 @@
     }
 
     const newVideoLoaded = () => {
+        console.log("[script.js] newVideoLoaded")
 
         // currentVideoBookmarks = await fetchBookmarks();
 
@@ -124,19 +134,19 @@
 
             ytLeftControls.appendChild(bookmarkButton);
             bookmarkButton.addEventListener('mouseover', mouseEnterEventHandler);
-            bookmarkButton.addEventListener('click', addNewBookmarkEventHandler);
+            bookmarkButton.addEventListener('click', addBookmarkEventHandler);
         }
     };
 
     // const playVideo = (videoUrl) => {
-        // const videoId = extractVideoId(videoUrl);
-        // if(videoId) {
-            // console.log(ytPlayer.src);
-            // ytPlayer.play(videoId);
-        // }
-        // else {
-            // console.error("[YouTube Bookmarker] Invalid YouTube URL");
-        // }
+    // const videoId = extractVideoId(videoUrl);
+    // if(videoId) {
+    // console.log(ytPlayer.src);
+    // ytPlayer.play(videoId);
+    // }
+    // else {
+    // console.error("[YouTube Bookmarker] Invalid YouTube URL");
+    // }
     // }
 
 
