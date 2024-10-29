@@ -8,11 +8,11 @@ const addBookmark = (bookmarkListElement, bookmark) => {
     bookmarkTitleElement.textContent = bookmark.desc;
     bookmarkTitleElement.className = "bookmark-title";
 
-    bookmarkElement.id = "bookmark-" + bookmark.videoId + bookmark.time;
+    bookmarkElement.id = "bookmark-" + bookmark.key;
     bookmarkElement.className = "bookmark-item";
     bookmarkElement.setAttribute("timestamp", bookmark.time);
     bookmarkElement.setAttribute("videoId", bookmark.videoId);
-    bookmarkElement.setAttribute("id", bookmark.id);
+    bookmarkElement.setAttribute("key", bookmark.key);
 
     actionButtonsElement.className = "action-buttons";
 
@@ -42,10 +42,7 @@ const viewBookmarks = (currentBookmarks=[]) => {
     return;
 }
 
-const onPlay = async (e) => {
-    const currentTabURL = await getCurrentTabURL();
-    console.log(currentTabURL);
-
+const onPlay = (e) => {
     const elem = e.target.parentNode.parentNode;
     const bookmarkTime = elem.getAttribute("timestamp");
     const videoId = elem.getAttribute("videoId");
@@ -53,37 +50,30 @@ const onPlay = async (e) => {
     chrome.tabs.create({ url: `https://www.youtube.com/watch?v=${videoId}&t=${bookmarkTime}` })
 };
 
-const onDelete = async (e) => {
+const onDelete = (e) => {
     // TODO
-    const currentTabURL = await getCurrentTabURL();
-
     const elem = e.target.parentNode.parentNode;
     const bookmarkTime = elem.getAttribute("timestamp");
     const videoId = elem.getAttribute("videoId");
-    const id = elem.getAttribute("id");
-    const bookmarkElementToDelete = document.getElementById("bookmark-" + videoId + bookmarkTime);
+    const key = elem.getAttribute("key");
+    const bookmarkElementToDelete = document.getElementById("bookmark-" + key);
 
     bookmarkElementToDelete.parentNode.removeChild(bookmarkElementToDelete);
 
     chrome.storage.sync.get("bookmarks", (data) => {
         let bookmarks = data.bookmarks || [];
-        bookmarks = bookmarks.filter(bookmark => bookmark.id !== id);
+        bookmarks = bookmarks.filter(bookmark => bookmark.key !== key);
+        console.log(bookmarks);
 
         chrome.storage.sync.set({ "bookmarks": bookmarks });
     });
 
     viewBookmarks();
-
-    // chrome.tabs.sendMessage(currentTabURL.id, {
-    //     type: "DELETE",
-        // videoId: videoId,
-        // value: bookmarkTime
-    // }, viewBookmarks);
-
 };
 
 const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
     const controlElement = document.createElement("img");
+    controlElement.className = "action-buttons-" + src;
     controlElement.src = "assets/" + src + "_32.png";
     controlElement.title = src;
     controlElement.addEventListener("click", eventListener);
@@ -91,23 +81,8 @@ const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // const currentTab = await getCurrentTabURL();
-    // const queryParameters = currentTab.url.split("?")[1];
-    // const urlParameters = new URLSearchParams(queryParameters);
-    // const currentVideo = urlParameters.get("v");
-
-    // if (currentTab.url.includes("youtube.com/watch") && currentVideo) {
-    // YouTube video url
     chrome.storage.sync.get("bookmarks", (data) => {
         let bookmarks = data.bookmarks || [];
-
-        // Show bookmarks
         viewBookmarks(bookmarks);
     });
-    // }
-    // else {
-    // Not a YouTube video url
-    // const container = document.getElementsByClassName("youtube-bookmark-extension")[0];
-    // container.innerHTML = '<div class="title">This is not a YouTube video page.</div>';
-    // }
 });

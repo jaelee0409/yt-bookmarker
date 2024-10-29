@@ -7,46 +7,16 @@
         const { type, value, videoId } = obj;
 
         if (type === "PLAY") {
-            // console.log("[PLAY MESSAGE]");
-            // console.log("value : " + value);
-            // chrome.tabs.create({ url: "https://www.youtube.com/watch?v=${videoId}&t=${value}" })
         }
         else if (type === "DELETE") {
-            console.log("[DELETE MESSAGE]");
-
-
-            // chrome.storage.sync.get("bookmarks", (data) => {
-            //     let bookmarks = data.bookmarks || [];
-                // bookmarks = bookmarks.filter(bookmark => bookmark.videoId !== videoId);
-
-                // chrome.storage.sync.set({ "bookmarks": bookmarks });
-            // });
-
-            // TODO
-            // currentVideoBookmarks = currentVideoBookmarks.filter((t) => t.time != value);
-            // chrome.storage.sync.set({
-            // [currentVideo]: JSON.stringify(currentVideoBookmarks)
-            // });
-
-            // response(currentVideoBookmarks);
         }
         else if (type === "LOAD") {
             newVideoLoaded();
         }
     });
 
-    // const fetchBookmarks = () => {
-    // console.log("Fetching bookmarks...");
-
-    // chrome.storage.sync.get("bookmarks", (data) => {
-    // let bookmarks = data.bookmarks || [];
-
-    // });
-    // };
-
     const addBookmarkEventHandler = () => {
         console.log("Adding a new bookmark...");
-        const createdTime = new Date();
 
         const metaElement = document.querySelector('meta[property="og:url"]');
         const currentUrl = metaElement ? metaElement.getAttribute('content') : null;
@@ -56,18 +26,18 @@
         const newBookmark = {
             time: currentTime,
             videoId: currentVideoId,
-            desc: document.title.slice(0, -10) + " bookmarked at " + getTime(currentTime),
-            createdAt: createdTime,
-            id: currentVideoId + currentTime
+            desc: document.title.slice(0, -10) + "\nbookmarked at " + getTime(currentTime),
+            key: currentVideoId + currentTime
         };
-
-        console.log("id: " + currentVideoId + currentTime);
-        // currentVideoBookmarks = await fetchBookmarks();
 
         chrome.storage.sync.get("bookmarks", (data) => {
             let bookmarks = data.bookmarks || [];
             bookmarks.push(newBookmark);
-            bookmarks.sort((a, b) => b.createdAt - a.createdAt);
+            bookmarks.sort((a, b) => {
+                if(a.key < b.key) return -1;
+                else if(a.key > b.key) return 1;
+                else return b.time - a.time;
+            });
 
             chrome.storage.sync.set({ "bookmarks": bookmarks });
         });
@@ -119,8 +89,6 @@
     const newVideoLoaded = () => {
         console.log("[script.js] newVideoLoaded")
 
-        // currentVideoBookmarks = await fetchBookmarks();
-
         const bookmarkButtonExists = document.getElementsByClassName('bookmark-button')[0];
 
         if (!bookmarkButtonExists) {
@@ -138,19 +106,6 @@
         }
     };
 
-    // const playVideo = (videoUrl) => {
-    // const videoId = extractVideoId(videoUrl);
-    // if(videoId) {
-    // console.log(ytPlayer.src);
-    // ytPlayer.play(videoId);
-    // }
-    // else {
-    // console.error("[YouTube Bookmarker] Invalid YouTube URL");
-    // }
-    // }
-
-
-    // newVideoLoaded();
 })();
 
 const getTime = t => {
