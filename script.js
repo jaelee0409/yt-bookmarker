@@ -6,27 +6,26 @@
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type, value, videoId } = obj;
 
-        if (type === "PLAY") {
-        }
-        else if (type === "DELETE") {
-        }
-        else if (type === "LOAD") {
+        if (type === "LOAD") {
             newVideoLoaded();
         }
     });
 
     const addBookmarkEventHandler = () => {
-        console.log("Adding a new bookmark...");
-
         const metaElement = document.querySelector('meta[property="og:url"]');
+        // Get the current URL of the YouTube video
         const currentUrl = metaElement ? metaElement.getAttribute('content') : null;
+        // Extract the current YouTube video's ID from the current URL
         const currentVideoId = extractVideoId(currentUrl);
+        // Get the current timestamp of the YouTube video (rounded down)
         const currentTime = Math.floor(ytPlayer.currentTime);
 
+        // New bookmark object
         const newBookmark = {
+            formattedTime: getTime(currentTime),
             time: currentTime,
             videoId: currentVideoId,
-            desc: document.title.slice(0, -10) + "\nbookmarked at " + getTime(currentTime),
+            title: document.title.slice(0, -10),
             key: currentVideoId + currentTime
         };
 
@@ -34,9 +33,16 @@
             let bookmarks = data.bookmarks || [];
             bookmarks.push(newBookmark);
             bookmarks.sort((a, b) => {
-                if(a.key < b.key) return -1;
-                else if(a.key > b.key) return 1;
-                else return b.time - a.time;
+                if(a.videoId < b.videoId) {
+                    return -1;
+
+                }
+                else if(a.videoId > b.videoId) {
+                    return 1;
+                }
+                else {
+                    return a.time - b.time;
+                }
             });
 
             chrome.storage.sync.set({ "bookmarks": bookmarks });
@@ -87,15 +93,13 @@
     }
 
     const newVideoLoaded = () => {
-        console.log("[script.js] newVideoLoaded")
-
         const bookmarkButtonExists = document.getElementsByClassName('bookmark-button')[0];
 
         if (!bookmarkButtonExists) {
             const bookmarkButton = document.createElement('img');
             bookmarkButton.src = chrome.runtime.getURL('assets/add.png');
             bookmarkButton.className = 'ytp-button bookmark-button';
-            bookmarkButton.style.cssText = 'margin-left: auto;';
+            bookmarkButton.style.cssText = 'margin-left: auto; min-width: 48px; min-height: 48px;';
 
             ytLeftControls = document.getElementsByClassName('ytp-left-controls')[0];
             ytPlayer = document.getElementsByClassName('video-stream')[0];

@@ -2,15 +2,19 @@ import { getCurrentTabURL } from "./utils.js"
 
 const addBookmark = (bookmarkListElement, bookmark) => {
     const bookmarkTitleElement = document.createElement("span");
+    const bookmarkTimeElement = document.createElement("span");
     const bookmarkElement = document.createElement("li");
     const actionButtonsElement = document.createElement("div");
 
-    bookmarkTitleElement.textContent = bookmark.desc;
+    bookmarkTitleElement.textContent = bookmark.title;
     bookmarkTitleElement.className = "bookmark-title";
+
+    bookmarkTimeElement.textContent = bookmark.formattedTime;
+    bookmarkTimeElement.className = "bookmark-time";
 
     bookmarkElement.id = "bookmark-" + bookmark.key;
     bookmarkElement.className = "bookmark-item";
-    bookmarkElement.setAttribute("timestamp", bookmark.time);
+    bookmarkElement.setAttribute("timestamp", bookmark.formattedTime);
     bookmarkElement.setAttribute("videoId", bookmark.videoId);
     bookmarkElement.setAttribute("key", bookmark.key);
 
@@ -20,23 +24,20 @@ const addBookmark = (bookmarkListElement, bookmark) => {
     setBookmarkAttributes("delete", onDelete, actionButtonsElement);
 
     bookmarkElement.appendChild(bookmarkTitleElement);
+    bookmarkElement.appendChild(bookmarkTimeElement);
     bookmarkElement.appendChild(actionButtonsElement);
     bookmarkListElement.appendChild(bookmarkElement);
-
 }
 
 const viewBookmarks = (currentBookmarks=[]) => {
-    const bookmarkList = document.getElementById("bookmark-list");
-    // bookmarkList.innerHTML = "";
+    const bookmarkListElement = document.getElementById("bookmark-list");
+    bookmarkListElement.innerHTML = "";
 
     if (currentBookmarks.length > 0) {
         for (let i = 0; i < currentBookmarks.length; ++i) {
             const bookmark = currentBookmarks[i];
-            addBookmark(bookmarkList, bookmark);
+            addBookmark(bookmarkListElement, bookmark);
         }
-    }
-    else {
-        // bookmarkList.innerHTML = '<i class="row">No bookmarks</i>';
     }
 
     return;
@@ -63,12 +64,10 @@ const onDelete = (e) => {
     chrome.storage.sync.get("bookmarks", (data) => {
         let bookmarks = data.bookmarks || [];
         bookmarks = bookmarks.filter(bookmark => bookmark.key !== key);
-        console.log(bookmarks);
 
         chrome.storage.sync.set({ "bookmarks": bookmarks });
+        viewBookmarks(bookmarks);
     });
-
-    viewBookmarks();
 };
 
 const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
@@ -79,6 +78,19 @@ const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
     controlElement.addEventListener("click", eventListener);
     controlParentElement.appendChild(controlElement);
 };
+
+const searchInputElement = document.getElementById("searchInput");
+const bookmarkList = document.getElementById("bookmark-list");
+searchInputElement.addEventListener("input", () => {
+    const searchTerm = searchInputElement.value.toLowerCase();
+
+    chrome.storage.sync.get("bookmarks", (data) => {
+        let bookmarks = data.bookmarks || [];
+
+        bookmarks = bookmarks.filter(bookmark => bookmark.title.toLowerCase().includes(searchTerm));
+        viewBookmarks(bookmarks);
+    });
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.sync.get("bookmarks", (data) => {
