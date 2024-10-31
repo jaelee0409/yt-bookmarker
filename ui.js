@@ -9,12 +9,12 @@ const addBookmark = (bookmarkListElement, bookmark) => {
     bookmarkTitleElement.textContent = bookmark.title;
     bookmarkTitleElement.className = "bookmark-title";
 
-    bookmarkTimeElement.textContent = bookmark.formattedTime;
+    bookmarkTimeElement.textContent = getTime(bookmark.time);
     bookmarkTimeElement.className = "bookmark-time";
 
     bookmarkElement.id = "bookmark-" + bookmark.key;
     bookmarkElement.className = "bookmark-item";
-    bookmarkElement.setAttribute("timestamp", bookmark.formattedTime);
+    bookmarkElement.setAttribute("timestamp", bookmark.time);
     bookmarkElement.setAttribute("videoId", bookmark.videoId);
     bookmarkElement.setAttribute("key", bookmark.key);
 
@@ -78,6 +78,14 @@ const setBookmarkAttributes = (src, eventListener, controlParentElement) => {
     controlElement.addEventListener("click", eventListener);
     controlParentElement.appendChild(controlElement);
 };
+
+const getTime = t => {
+    var date = new Date(0);
+    date.setSeconds(t);
+
+    return date.toISOString().substr(11, 8);
+};
+
 
 const searchInputElement = document.getElementById("searchInput");
 const bookmarkList = document.getElementById("bookmark-list");

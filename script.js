@@ -22,7 +22,6 @@
 
         // New bookmark object
         const newBookmark = {
-            formattedTime: getTime(currentTime),
             time: currentTime,
             videoId: currentVideoId,
             title: document.title.slice(0, -10),
@@ -111,13 +110,6 @@
     };
 
 })();
-
-const getTime = t => {
-    var date = new Date(0);
-    date.setSeconds(t);
-
-    return date.toISOString().substr(11, 8);
-};
 
 const extractVideoId = (url) => {
     const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|watch)\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;

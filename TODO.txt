@@ -1,0 +1,13 @@
+1. Tagging system for organization
+2. Categorization
+3. Allow users to add notes or comments to each bookmark for personal reference
+4. Rating system
+5. CSV/JSON export/import
+6. Feature for users to share bookmarks with friends or on social media
+7. Search by tags, ratings, or date added
+8. Thumbnail preview
+9. Watch later queue
+10. Reminders system
+11. Keyboard shortcuts
+12. AI personalized recommendations
+13. Customizable UI
