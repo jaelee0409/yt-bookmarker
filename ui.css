@@ -19,7 +19,7 @@ body {
     background-color: #282C2B;
     padding: 16px;
     text-align: center;
-    font-size: 1.5em;
+    font-size: 1.5rem;
     color: #FFF;
 }
 
@@ -34,7 +34,7 @@ body {
     padding: 8px;
     border: 1px solid #282C2B;
     border-radius: 8px;
-    font-size: 1em;
+    font-size: 1rem;
     background-color: #E8EAEF;
 }
 
